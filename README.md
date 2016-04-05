@@ -11,13 +11,14 @@ $ npm install --save redux-hotjar
 ## Setup
 
 ```js
-import { createStore, applyMiddleware } from 'redux';
 import hotjar from 'redux-hotjar';
+
+import { createStore, applyMiddleware } from 'redux';
 import rootReducer from './reducers';
 
 const store = createStore(
   rootReducer,
-  applyMiddleware(hotjar)
+  applyMiddleware(hotjar())
 );
 ```
 
