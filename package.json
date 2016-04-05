@@ -1,6 +1,6 @@
 {
   "name": "redux-hotjar",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Declarative Hotjar tagging for Redux",
   "main": "lib/index.js",
   "scripts": {
