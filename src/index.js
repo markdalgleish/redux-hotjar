@@ -7,7 +7,7 @@ const typeError = tag => {
 };
 
 export default () => tap(({ meta }) => meta && meta.hotjar, input => {
-  if (typeof window === 'undefined' || typeof window.hj !== 'function') {
+  if (typeof window === 'undefined') {
     return;
   }
 
@@ -27,5 +27,7 @@ export default () => tap(({ meta }) => meta && meta.hotjar, input => {
     return;
   }
 
-  window.hj('tagRecording', tags);
+  if (typeof window.hj === 'function') {
+    window.hj('tagRecording', tags);
+  }
 });

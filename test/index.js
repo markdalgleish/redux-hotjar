@@ -77,7 +77,33 @@ describe('redux-hotjar', () => {
       assert.equal(hjSpy.callCount, 0);
     });
 
+    it('has meta that is not an array or string, even if window.hj is missing', () => {
+      delete global.window.hj;
+      store.dispatch(actionWithMeta({ hotjar: { invalid: true } }));
+      const [ errorMessage, tag ] = errorSpy.getCall(0).args;
+      assert.equal(errorMessage, 'Hotjar tags must be strings or arrays of strings');
+      assert.deepEqual(tag, { invalid: true });
+      assert.equal(hjSpy.callCount, 0);
+    });
+
     it('has meta with an array with a non-string value', () => {
+      store.dispatch(actionWithMeta({ hotjar: [
+        'string',
+        'another string',
+        { not: 'a string' }
+      ]}));
+      const [ errorMessage, tag ] = errorSpy.getCall(0).args
+      assert.equal(errorMessage, 'Hotjar tags must be strings or arrays of strings');
+      assert.deepEqual(tag, [
+        'string',
+        'another string',
+        { not: 'a string' }
+      ]);
+      assert.equal(hjSpy.callCount, 0);
+    });
+
+    it('has meta with an array with a non-string value, even if window.hj is missing', () => {
+      delete global.window.hj;
       store.dispatch(actionWithMeta({ hotjar: [
         'string',
         'another string',
