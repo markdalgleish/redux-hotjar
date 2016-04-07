@@ -1,11 +1,14 @@
-import { assert } from 'chai';
-import { spy } from 'sinon';
-import { createStore, applyMiddleware } from 'redux';
-import hotjar from '../src';
-
 global.window = {};
 
+import hotjar, { reducer as hotjarReducer } from '../src';
+
+import { assert } from 'chai';
+import { spy } from 'sinon';
+import { createStore, applyMiddleware, combineReducers } from 'redux';
+
+const createStoreWithMiddleware = applyMiddleware(hotjar())(createStore);
 const actionWithMeta = meta => ({ type: 'ACTION', ...(meta ? { meta } : {}) });
+const myReducer = (state = 0, { type }) => type === 'ADD' ? state + 1 : state;
 
 describe('redux-hotjar', () => {
   let store;
@@ -16,9 +19,7 @@ describe('redux-hotjar', () => {
     hjSpy = spy();
     global.window = { hj: hjSpy };
     console.error = errorSpy = spy();
-    const createStoreWithMiddleware = applyMiddleware(hotjar())(createStore);
-    const reducer = (state, { type }) => type === 'ADD' ? state + 1 : state;
-    store = createStoreWithMiddleware(reducer, 0);
+    store = createStoreWithMiddleware(combineReducers({ myReducer }));
   });
 
   it('supports single tags', () => {
@@ -51,9 +52,9 @@ describe('redux-hotjar', () => {
   });
 
   it('allows the action to go through', () => {
-    assert.equal(store.getState(), 0);
+    assert.equal(store.getState().myReducer, 0);
     store.dispatch({ type: 'ADD', meta: { hotjar: 'hello' }});
-    assert.equal(store.getState(), 1);
+    assert.equal(store.getState().myReducer, 1);
   });
 
   describe('tags are ignored when', () => {
@@ -65,6 +66,49 @@ describe('redux-hotjar', () => {
     it('has meta that is an empty array', () => {
       store.dispatch(actionWithMeta({ hotjar: [] }));
       assert.equal(hjSpy.callCount, 0);
+    });
+  });
+
+  it('does not support queuing tags when not using reducer', () => {
+    delete global.window;
+
+    store.dispatch(actionWithMeta({ hotjar: 'action 1' }));
+    store.dispatch(actionWithMeta({ hotjar: 'action 2' }));
+    store.dispatch(actionWithMeta({ hotjar: 'action 3' }));
+
+    assert.equal(hjSpy.callCount, 0);
+    global.window = { hj: hjSpy };
+
+    store.dispatch(actionWithMeta({ hotjar: 'action 4' }));
+    assert.equal(hjSpy.callCount, 1);
+
+    store.dispatch(actionWithMeta({ hotjar: 'action 5' }));
+    assert.equal(hjSpy.callCount, 2);
+  });
+
+  describe('when using the redux-hotjar reducer', () => {
+    beforeEach(() => {
+      store = createStoreWithMiddleware(combineReducers({
+        myReducer,
+        ...hotjarReducer()
+      }));
+    });
+
+    it('supports queuing tags when hotjar is not available', () => {
+      delete global.window;
+
+      store.dispatch(actionWithMeta({ hotjar: 'action 1' }));
+      store.dispatch(actionWithMeta({ hotjar: 'action 2' }));
+      store.dispatch(actionWithMeta({ hotjar: 'action 3' }));
+
+      assert.equal(hjSpy.callCount, 0);
+      global.window = { hj: hjSpy };
+
+      store.dispatch(actionWithMeta({ hotjar: 'action 4' }));
+      assert.equal(hjSpy.callCount, 4);
+
+      store.dispatch(actionWithMeta({ hotjar: 'action 5' }));
+      assert.equal(hjSpy.callCount, 5);
     });
   });
 

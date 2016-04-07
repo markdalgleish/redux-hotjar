@@ -10,12 +10,39 @@ $ npm install --save redux-hotjar
 
 ## Setup
 
+For client-only applications, simply include the supplied middleware.
+
 ```js
 import hotjar from 'redux-hotjar';
 
 import { createStore, applyMiddleware } from 'redux';
 import rootReducer from './reducers';
 
+const store = createStore(
+  rootReducer,
+  applyMiddleware(hotjar())
+);
+```
+
+For server-rendered applications, to ensure Hotjar tags for server-side actions are included in your recordings, you'll also need to include the redux-hotjar reducer in your store.
+
+Note that, for brevity, the following example uses the proposed [object spread properties](https://github.com/sebmarkbage/ecmascript-rest-spread#spread-properties) standard, which is available via [babel-plugin-transform-object-rest-spread](https://www.npmjs.com/package/babel-plugin-transform-object-rest-spread).
+
+
+```js
+import hotjar, { reducer as hotjarReducer } from 'redux-hotjar';
+
+import { createStore, applyMiddleware, combineReducers } from 'redux';
+import { reducer1, reducer2 } from './reducers';
+
+// First, include the redux-hotjar reducer in your root reducer:
+const rootReducer = combineReducers({
+  reducer1,
+  reducer2,
+  ...hotjarReducer()
+});
+
+// Then, apply the middleware to the store:
 const store = createStore(
   rootReducer,
   applyMiddleware(hotjar())

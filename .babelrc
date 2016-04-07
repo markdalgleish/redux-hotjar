@@ -3,7 +3,6 @@
     "es2015"
   ],
   "plugins": [
-    "transform-object-rest-spread",
-    "add-module-exports"
+    "transform-object-rest-spread"
   ]
 }
