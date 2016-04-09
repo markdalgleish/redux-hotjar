@@ -24,7 +24,7 @@ const store = createStore(
 );
 ```
 
-For server-rendered applications, to ensure Hotjar tags for server-side actions are included in your recordings, you'll also need to include the redux-hotjar reducer in your store.
+For server-rendered applications, to ensure Hotjar tags for server-side actions are included in your recordings, you'll also need to include the redux-hotjar reducer in your store. For now, only plain object-based stores are supported.
 
 Note that, for brevity, the following example uses the proposed [object spread properties](https://github.com/sebmarkbage/ecmascript-rest-spread#spread-properties) standard, which is available via [babel-plugin-transform-object-rest-spread](https://www.npmjs.com/package/babel-plugin-transform-object-rest-spread).
 
@@ -49,7 +49,7 @@ const store = createStore(
 );
 ```
 
-## Tagging Events
+## Tagging Actions
 
 Simply add metadata to your actions using the [Flux Standard Action](https://github.com/acdlite/flux-standard-action) pattern.
 
